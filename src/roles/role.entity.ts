@@ -2,13 +2,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
 export class Role {
-  @PrimaryGeneratedColumn('uuid')
+  // App-supplied (crypto.randomUUID(), not a DB-generated uuid column) so
+  // backfilled rows can keep their original Firestore doc id — which isn't
+  // valid Postgres `uuid` format — instead of drifting from the mirror.
+  @PrimaryColumn()
   id: string;
 
   @Column({ unique: true })

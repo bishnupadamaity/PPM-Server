@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,7 +16,7 @@ export class RolesService {
   }
 
   create(dto: CreateRoleDto): Promise<Role> {
-    return this.rolesRepo.save(this.rolesRepo.create(dto));
+    return this.rolesRepo.save(this.rolesRepo.create({ id: randomUUID(), ...dto }));
   }
 
   async update(id: string, dto: UpdateRoleDto): Promise<Role> {
