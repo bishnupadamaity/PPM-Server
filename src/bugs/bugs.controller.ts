@@ -28,6 +28,11 @@ export class BugsController {
     return this.bugsService.findAll();
   }
 
+  @Get('by-project/:projectId')
+  findByProject(@Param('projectId') projectId: string) {
+    return this.bugsService.findByProject(projectId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.bugsService.findById(id);

@@ -20,6 +20,13 @@ export class BugsService {
     return this.bugsRepo.find({ order: { createdAt: 'DESC' } });
   }
 
+  findByProject(projectId: string): Promise<Bug[]> {
+    return this.bugsRepo.find({
+      where: { projectId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findById(id: string): Promise<Bug> {
     const bug = await this.bugsRepo.findOne({ where: { id } });
     if (!bug) throw new NotFoundException('Bug not found');
