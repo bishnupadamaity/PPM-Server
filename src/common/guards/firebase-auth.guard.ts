@@ -5,14 +5,27 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import type { createRemoteJWKSet, jwtVerify } from 'jose';
 import { AuthenticatedRequest } from '../types/authenticated-request';
 
-const FIREBASE_JWKS = createRemoteJWKSet(
-  new URL(
-    'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
-  ),
-);
+let jwksPromise: Promise<{
+  jwks: ReturnType<typeof createRemoteJWKSet>;
+  jwtVerify: typeof jwtVerify;
+}> | undefined;
+
+function getJwks() {
+  if (!jwksPromise) {
+    jwksPromise = import('jose').then(({ createRemoteJWKSet, jwtVerify }) => ({
+      jwks: createRemoteJWKSet(
+        new URL(
+          'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
+        ),
+      ),
+      jwtVerify,
+    }));
+  }
+  return jwksPromise;
+}
 
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
@@ -28,7 +41,8 @@ export class FirebaseAuthGuard implements CanActivate {
     const projectId = this.config.get<string>('FIREBASE_PROJECT_ID');
 
     try {
-      const { payload } = await jwtVerify(token, FIREBASE_JWKS, {
+      const { jwks, jwtVerify } = await getJwks();
+      const { payload } = await jwtVerify(token, jwks, {
         issuer: `https://securetoken.google.com/${projectId}`,
         audience: projectId,
       });
