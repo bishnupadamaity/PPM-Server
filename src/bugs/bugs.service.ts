@@ -7,6 +7,8 @@ import { BugComment } from './bug-comment.entity';
 import { CreateBugDto } from './dto/create-bug.dto';
 import { UpdateBugDto } from './dto/update-bug.dto';
 import { CreateBugCommentDto } from './dto/create-bug-comment.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/dto/paginated-result.dto';
 
 @Injectable()
 export class BugsService {
@@ -16,8 +18,13 @@ export class BugsService {
     private readonly commentsRepo: Repository<BugComment>,
   ) {}
 
-  findAll(): Promise<Bug[]> {
-    return this.bugsRepo.find({ order: { createdAt: 'DESC' } });
+  async findAll(query: PaginationQueryDto): Promise<PaginatedResult<Bug>> {
+    const [data, total] = await this.bugsRepo.findAndCount({
+      order: { createdAt: 'DESC' },
+      skip: query.skip,
+      take: query.limit,
+    });
+    return new PaginatedResult(data, total, query.page, query.limit);
   }
 
   findByProject(projectId: string): Promise<Bug[]> {

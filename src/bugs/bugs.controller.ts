@@ -6,8 +6,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BugsService } from './bugs.service';
 import { CreateBugDto } from './dto/create-bug.dto';
@@ -17,15 +19,18 @@ import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import { ApprovedGuard } from '../common/guards/approved.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
 import type { AuthenticatedRequest } from '../common/types/authenticated-request';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 
 @Controller('bugs')
 @UseGuards(FirebaseAuthGuard)
+@UseInterceptors(ResponseInterceptor)
 export class BugsController {
   constructor(private readonly bugsService: BugsService) {}
 
   @Get()
-  findAll() {
-    return this.bugsService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.bugsService.findAll(query);
   }
 
   @Get('by-project/:projectId')
@@ -54,7 +59,6 @@ export class BugsController {
   @UseGuards(AdminGuard)
   async remove(@Param('id') id: string) {
     await this.bugsService.remove(id);
-    return { success: true };
   }
 
   @Get(':id/comments')
