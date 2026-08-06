@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+// TypeORM requires the 'pg' driver dynamically at runtime, so Vercel's
+// dependency tracer can't detect it unless it's imported statically here.
+import 'pg';
 
 @Module({
   imports: [
